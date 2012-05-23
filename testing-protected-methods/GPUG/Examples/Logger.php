@@ -14,7 +14,7 @@ class Logger
 
 	public function __construct($logPath)
 	{
-		if (!is_writable($logPath)) {
+		if (!is_writable(dirname($logPath))) {
 			throw new \Exception('Unable to write to log path: ' . $logPath);
 		}
 

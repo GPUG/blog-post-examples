@@ -2,16 +2,20 @@
 
 namespace GPUG\Test\Examples;
 
+$exampleDir = $GLOBALS['ROOT_DIR'] . '/testing-protected-methods/GPUG/Examples';
+require_once $exampleDir . '/Logger.php';
+require_once $exampleDir . '/Persister.php';
+
 use GPUG\Examples\Logger;
 use GPUG\Examples\Persister;
 
+/**
+ * @group testing-protected-methods
+ */
 class PersisterTest extends \PHPUnit_Framework_TestCase
 {
 	public function setUp()
 	{
-		require_once __DIR__ . '/../Examples/Logger.php';
-		require_once __DIR__ . '/../Examples/Persister.php';
-
 		$logPath = '/tmp/test-log.log';
 		if (file_exists($logPath)) {
 			unlink($logPath);
@@ -24,17 +28,17 @@ class PersisterTest extends \PHPUnit_Framework_TestCase
 	{
 		$persisterMock = $this->getMockBuilder('GPUG\Examples\Persister')
 			->setConstructorArgs(array(array(), $this->_logger))
-			->setMethods('_persist', 'getLocation')
+			->setMethods(array('_persist', 'getLocation'))
 			->getMock();
 
 		$persisterMock->expects($this->any())
 			->method('getLocation')
 			->will($this->returnValue('/some/path'));
 
-		$this->assertEquals('/some/path', $persisterMock->persist());
+		$this->assertTrue($persisterMock->persist());
 
 		$logContents = file_get_contents('/tmp/test-log.log');
-		$logRegExp = '#^SEYZ \[\d\+\] \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[-+]\d{2}:\d{2}: Successfully stored uploaded file in: /some/path$#'; 
+		$logRegExp = '#^SEYZ \[\d+\] \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[-+]\d{2}:\d{2}: Successfully stored uploaded file in: /some/path$#'; 
 		$this->assertRegExp($logRegExp, $logContents);
 	}
 
@@ -46,13 +50,13 @@ class PersisterTest extends \PHPUnit_Framework_TestCase
 
 		$persisterMock->expects($this->any())
 			->method('_persist')
-			->will($this->throwException('the test denies it!'));
+			->will($this->throwException(new \Exception('the test denies it!')));
 
 		try {
 			$persisterMock->persist();
 		} catch (\Exception $e) {
 			$logContents = file_get_contents('/tmp/test-log.log');
-			$logRegExp = '#^OHNOES \[\d\+\] \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[-+]\d{2}:\d{2}: We were unable to store your file, maybe retry a little later$#'; 
+			$logRegExp = '#^OHNOES \[\d+\] \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[-+]\d{2}:\d{2}: Unable to persist uploaded file: the test denies it!$#'; 
 			$this->assertRegExp($logRegExp, $logContents);
 			return;
 		}

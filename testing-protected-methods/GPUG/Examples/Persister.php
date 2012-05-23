@@ -14,7 +14,7 @@ abstract class Persister
 	public function __construct(array $uploadInfo, Logger $logger)
 	{
 		$this->_uploadInfo = $uploadInfo;
-		$this->_logger = $log;
+		$this->_logger = $logger;
 	}
 
 	public function persist()
@@ -43,7 +43,7 @@ abstract class Persister
 
 		$this->_logger->log('Successfully stored uploaded file in: ' . $this->getLocation());
 
-		return $this->getLocation();
+		return true;
 	}
 
 	public function getLocation()

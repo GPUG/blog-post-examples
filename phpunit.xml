@@ -1,0 +1,11 @@
+<phpunit colors="true">
+	<php>
+		<var name="ROOT_DIR" value="." />
+	</php>
+
+	<testsuites>
+		<testsuite name="All" suffix="Test.php">
+			<directory>./testing-protected-methods/GPUG/Test</directory>
+		</testsuite>
+	</testsuites>
+</phpunit>
