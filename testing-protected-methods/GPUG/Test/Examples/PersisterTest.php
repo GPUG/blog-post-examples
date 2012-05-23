@@ -17,11 +17,14 @@ class PersisterTest extends \PHPUnit_Framework_TestCase
 	public function setUp()
 	{
 		$this->logPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'test-log.log';
+		$this->logger = new Logger($this->logPath);
+	}
+
+	public function tearDown()
+	{
 		if (file_exists($this->logPath)) {
 			unlink($this->logPath);
 		}
-
-		$this->logger = new Logger($this->logPath);
 	}
 
 	public function test_successful_persist()

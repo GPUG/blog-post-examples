@@ -37,6 +37,18 @@ class FileTest extends \PHPUnit_Framework_TestCase
 
 	}
 
+	public function tearDown()
+	{
+		$tempDir = sys_get_temp_dir();
+		$globPattern = $tempDir . DIRECTORY_SEPARATOR . 'UL-*';
+
+		foreach (glob($globPattern) as $tempFile) {
+			if (is_writable($tempFile)) {
+				unlink($tempFile);
+			}
+		}
+	}
+
 	public function test_protected_persist_indirectly_via_public_persist_success()
 	{
 		$filePersister = new File($_FILES, $this->logger);
