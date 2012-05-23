@@ -2,9 +2,9 @@
 
 namespace GPUG\Test\Examples;
 
-$exampleDir = $GLOBALS['ROOT_DIR'] . '/testing-protected-methods/GPUG/Examples';
-require_once $exampleDir . '/Logger.php';
-require_once $exampleDir . '/Persister.php';
+$exampleDir = realpath($GLOBALS['ROOT_DIR'] . '/testing-protected-methods/GPUG/Examples');
+require_once realpath($exampleDir . '/Logger.php');
+require_once realpath($exampleDir . '/Persister.php');
 
 use GPUG\Examples\Logger;
 use GPUG\Examples\Persister;
@@ -16,18 +16,18 @@ class PersisterTest extends \PHPUnit_Framework_TestCase
 {
 	public function setUp()
 	{
-		$logPath = '/tmp/test-log.log';
-		if (file_exists($logPath)) {
-			unlink($logPath);
+		$this->logPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'test-log.log';
+		if (file_exists($this->logPath)) {
+			unlink($this->logPath);
 		}
 
-		$this->_logger = new Logger($logPath);
+		$this->logger = new Logger($this->logPath);
 	}
 
 	public function test_successful_persist()
 	{
 		$persisterMock = $this->getMockBuilder('GPUG\Examples\Persister')
-			->setConstructorArgs(array(array(), $this->_logger))
+			->setConstructorArgs(array(array(), $this->logger))
 			->setMethods(array('_persist', 'getLocation'))
 			->getMock();
 
@@ -37,7 +37,7 @@ class PersisterTest extends \PHPUnit_Framework_TestCase
 
 		$this->assertTrue($persisterMock->persist());
 
-		$logContents = file_get_contents('/tmp/test-log.log');
+		$logContents = file_get_contents($this->logPath);
 		$logRegExp = '#^SEYZ \[\d+\] \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[-+]\d{2}:\d{2}: Successfully stored uploaded file in: /some/path$#'; 
 		$this->assertRegExp($logRegExp, $logContents);
 	}
@@ -45,7 +45,7 @@ class PersisterTest extends \PHPUnit_Framework_TestCase
 	public function test_failed_persist()
 	{
 		$persisterMock = $this->getMockBuilder('GPUG\Examples\Persister')
-			->setConstructorArgs(array(array(), $this->_logger))
+			->setConstructorArgs(array(array(), $this->logger))
 			->getMockForAbstractClass();
 
 		$persisterMock->expects($this->any())
@@ -55,7 +55,7 @@ class PersisterTest extends \PHPUnit_Framework_TestCase
 		try {
 			$persisterMock->persist();
 		} catch (\Exception $e) {
-			$logContents = file_get_contents('/tmp/test-log.log');
+			$logContents = file_get_contents($this->logPath);
 			$logRegExp = '#^OHNOES \[\d+\] \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[-+]\d{2}:\d{2}: Unable to persist uploaded file: the test denies it!$#'; 
 			$this->assertRegExp($logRegExp, $logContents);
 			return;

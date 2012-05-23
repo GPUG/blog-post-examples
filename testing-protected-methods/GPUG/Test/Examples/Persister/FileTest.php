@@ -2,10 +2,10 @@
 
 namespace GPUG\Test\Examples\Persister;
 
-$exampleDir = $GLOBALS['ROOT_DIR'] . '/testing-protected-methods/GPUG/Examples';
-require_once $exampleDir . '/Logger.php';
-require_once $exampleDir . '/Persister.php';
-require_once $exampleDir . '/Persister/File.php';
+$exampleDir = realpath($GLOBALS['ROOT_DIR'] . '/testing-protected-methods/GPUG/Examples');
+require_once realpath($exampleDir . '/Logger.php');
+require_once realpath($exampleDir . '/Persister.php');
+require_once realpath($exampleDir . '/Persister/File.php');
 
 use GPUG\Examples\Logger;
 use GPUG\Examples\Persister\File;
@@ -18,11 +18,11 @@ class FileTest extends \PHPUnit_Framework_TestCase
 
 	public function setUp()
 	{
-		$this->_logger = $this->getMockBuilder('GPUG\Examples\Logger')
+		$this->logger = $this->getMockBuilder('GPUG\Examples\Logger')
 			->disableOriginalConstructor()
 			->getMock();
 
-		$uploadedFile = tempnam(sys_get_temp_dir(), 'JustUploaded-');
+		$uploadedFile = tempnam(sys_get_temp_dir(), 'UL-');
 		file_put_contents($uploadedFile, "Hello World\n"); 
 
 		$_FILES = array(
@@ -39,11 +39,11 @@ class FileTest extends \PHPUnit_Framework_TestCase
 
 	public function test_protected_persist_indirectly_via_public_persist_success()
 	{
-		$filePersister = new File($_FILES, $this->_logger);
+		$filePersister = new File($_FILES, $this->logger);
 		$this->assertTrue($filePersister->persist());
 
 		$persistedLocation = \PHPUnit_Framework_Assert::readAttribute($filePersister, '_location');
-		$this->assertRegExp('/Upload-/', $persistedLocation);
+		$this->assertRegExp('/UL-/', $persistedLocation);
 		$this->assertTrue(file_exists($persistedLocation));
 		$this->assertEquals("Hello World\n", file_get_contents($persistedLocation));
 	}
@@ -51,7 +51,7 @@ class FileTest extends \PHPUnit_Framework_TestCase
 	public function test_protected_persist_indirectly_via_public_persist_failure()
 	{
 		$filePersisterMock = $this->getMockBuilder('GPUG\Examples\Persister\File')
-			->setConstructorArgs(array($_FILES, $this->_logger))
+			->setConstructorArgs(array($_FILES, $this->logger))
 			->setMethods(array('_moveUploadedFile'))
 			->getMock();
 
@@ -77,14 +77,14 @@ class FileTest extends \PHPUnit_Framework_TestCase
 
 	public function test_protected_persist_directly_with_reflection_success()
 	{
-		$filePersister = new File($_FILES, $this->_logger);
+		$filePersister = new File($_FILES, $this->logger);
 
 		$reflectedPersist = new \ReflectionMethod($filePersister, '_persist');
 		$reflectedPersist->setAccessible(true);
 		$reflectedPersist->invoke($filePersister);
 
 		$persistedLocation = \PHPUnit_Framework_Assert::readAttribute($filePersister, '_location');
-		$this->assertRegExp('/Upload-/', $persistedLocation);
+		$this->assertRegExp('/UL-/', $persistedLocation);
 		$this->assertTrue(file_exists($persistedLocation));
 		$this->assertEquals("Hello World\n", file_get_contents($persistedLocation));
 	}
@@ -93,7 +93,7 @@ class FileTest extends \PHPUnit_Framework_TestCase
 	{
 
 		$filePersisterMock = $this->getMockBuilder('GPUG\Examples\Persister\File')
-			->setConstructorArgs(array($_FILES, $this->_logger))
+			->setConstructorArgs(array($_FILES, $this->logger))
 			->setMethods(array('_moveUploadedFile'))
 			->getMock();
 
@@ -118,11 +118,11 @@ class FileTest extends \PHPUnit_Framework_TestCase
 
 	public function test_protected_persist_with_testable_subclass_success()
 	{
-		$filePersister = new TestableFile($_FILES, $this->_logger);
+		$filePersister = new TestableFile($_FILES, $this->logger);
 		$filePersister->_persistWrapper();
 
 		$persistedLocation = \PHPUnit_Framework_Assert::readAttribute($filePersister, '_location');
-		$this->assertRegExp('/Upload-/', $persistedLocation);
+		$this->assertRegExp('/UL-/', $persistedLocation);
 		$this->assertTrue(file_exists($persistedLocation));
 		$this->assertEquals("Hello World\n", file_get_contents($persistedLocation));
 	}
@@ -131,7 +131,7 @@ class FileTest extends \PHPUnit_Framework_TestCase
 	{
 
 		$filePersisterMock = $this->getMockBuilder('GPUG\Test\Examples\Persister\TestableFile')
-			->setConstructorArgs(array($_FILES, $this->_logger))
+			->setConstructorArgs(array($_FILES, $this->logger))
 			->setMethods(array('_moveUploadedFile'))
 			->getMock();
 
